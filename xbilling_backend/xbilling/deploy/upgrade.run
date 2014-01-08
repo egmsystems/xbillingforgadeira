@@ -1,0 +1,56 @@
+<?php
+/**
+ *
+ * Upgrade script for xBilling Module for ZPanel 10.0.2
+ * Version : 100
+ * Author :  Aderemi Adewale (modpluz @ ZPanel Forums)
+ * Email : goremmy@gmail.com
+ */
+
+require_once('cnf/db.php');
+require_once('dryden/db/driver.class.php');
+require_once('dryden/debug/logger.class.php');
+require_once('dryden/runtime/dataobject.class.php');
+require_once('dryden/sys/versions.class.php');
+require_once('dryden/ctrl/options.class.php');
+require_once('dryden/ctrl/auth.class.php');
+require_once('dryden/ctrl/users.class.php');
+require_once('dryden/fs/director.class.php');
+require_once('inc/dbc.inc.php');
+
+
+//upgrade
+upgradeModule();
+
+function upgradeModule(){
+    global $zdbh;
+        
+    //update payment methods table
+    try {
+        $numrows = $zdbh->prepare("ALTER TABLE `zpanel_xbilling`.`x_payment_methods` 
+                                    ADD `method_deleted_ts` INT(30) NULL AFTER `reseller_ac_id_fk`;");
+        $numrows->execute();
+    } catch(Exception $e){
+        // column exists, continue
+    }
+    
+    //add free package column
+    try {
+        $numrows = $zdbh->prepare("ALTER TABLE `zpanel_xbilling`.`x_packages` ADD `free_package_yn` TINYINT(1) NOT NULL DEFAULT '0' AFTER `enabled_yn`;");
+        $numrows->execute();
+    } catch(Exception $e){
+        // column exists, continue
+    }
+    
+
+    //add invoice created column
+    try {
+        $numrows = $zdbh->prepare("ALTER TABLE  zpanel_core.`x_vhosts` ADD  `vh_invoice_created_yn` TINYINT( 1 ) NOT NULL DEFAULT  '0' AFTER  `vh_expiry_ts`;");
+        $numrows->execute();
+    } catch(Exception $e){
+        // column exists, continue
+    }
+  
+}
+
+?>
